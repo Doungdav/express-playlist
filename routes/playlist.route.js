@@ -1,7 +1,7 @@
 const express = require('express');
 //const multer = require('multer');
 const router = express.Router();
-const Playlist = require('../models/playlist');
+const { Playlist, validatePlaylist } = require('../models/playlist');
 //const path = require('path');
 
 // Set up storage for images
@@ -28,6 +28,12 @@ router.post('/upload', upload.single('file'), (req, res) => {
 
 //Create Playlist
 router.post('', async (req, res) => {
+    // Validate the request body
+    const { error } = validatePlaylist(req.body);
+    
+    if (error) {
+        return res.status(400).send(error.details[0].message);
+    }
     const playlist = new Playlist(req.body);
     console.log(playlist);
     console.log(req.body);

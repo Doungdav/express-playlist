@@ -1,11 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const Song = require('../models/song');
+const { Song, validateSong } = require('../models/song');
 
 
 
 // Create a new song
 router.post('', async (req, res) => {
+    // Validate the request body
+    const { error } = validateSong(req.body);
+    
+    if (error) {
+        return res.status(400).send(error.details[0].message);
+    }
     const { title, artist, duration } = req.body;
     const newSong = new Song({ title, artist, duration });
     await newSong.save();
