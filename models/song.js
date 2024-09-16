@@ -7,7 +7,7 @@ const songSchema = new mongoose.Schema({
 
     title:{type:String, required:true, unique:true},
     artist:{type:String, required:true, unique:true},
-    //image:{type: String, unique: true, sparse: true},
+    image:{type: String},
     duration:{type:Number, require:true},
     url:{type:String},
     create_at:{type:Date, default:Date.now},

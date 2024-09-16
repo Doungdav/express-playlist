@@ -14,7 +14,7 @@ const playlist_songRoutes = require('./routes/playlist_song.route');
 
 
 
-// mongoose.connect('mongodb+srv://doungdav3:Odu4bsKCjWUxYcjo@esther1.5nyd0.mongodb.net/?retryWrites=true&w=majority&appName=esther1');
+mongoose.connect('mongodb+srv://doungdav3:Odu4bsKCjWUxYcjo@esther1.5nyd0.mongodb.net/?retryWrites=true&w=majority&appName=esther1');
 
 
 const connectDB = async () => {
@@ -37,7 +37,7 @@ app.get('/', function(req, res){
 
 //middleware
 app.use(express.json());
-//app.use('/uploads', express.static('uploads')); // Serve uploaded images
+app.use('/uploads', express.static('uploads')); // Serve uploaded images
 
 
 // Routes
