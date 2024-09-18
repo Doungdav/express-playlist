@@ -4,6 +4,7 @@ const http = require('http').Server(app);
 const express = require('express');
 
 const mongoose = require('mongoose');
+const path = require('path');
 
 //Models
 const userRoutes = require('./routes/user.route');
@@ -37,14 +38,20 @@ app.get('/', function(req, res){
 
 //middleware
 app.use(express.json());
-app.use('/uploads', express.static('uploads')); // Serve uploaded images
-
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
+// app.use(express.static('upload'));
+// // Serve static files from the "public" directory
+// //app.use(express.static(path.join(__dirname, 'public')));
+// app.use((err, req, res, next) => {
+//     console.error('Global error handler:', err);
+//     res.status(500).json({ status: 'FAILED', message: 'Something went wrong!' });
+// });
 
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/playlists', playlistRoutes);
 app.use('/api/songs', songRoutes);
-app.use('/api/playlist_songs', playlist_songRoutes);
+app.use('/api/playlists/:playlistsId', playlist_songRoutes);
 
 
 

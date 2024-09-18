@@ -6,6 +6,7 @@ const playlistSchema = new mongoose.Schema({
     name:{type:String, required: true, unique:true},
     description:{type:String, required:true},
     image:{type:String},
+    url:{type:String},
     create_at:{type:Date, default:Date.now},
     update_at:{type:Date, default:Date.now}
 
@@ -23,7 +24,8 @@ const validatePlaylist = (playlist) => {
             'string.base': `"description" should be a type of 'text'`,
             'any.required': `"description" is a required field`
         }),
-        image: Joi.string().optional()
+        image: Joi.string().optional(),
+        url: Joi.string().optional()
     });
     return schema.validate(playlist);  // Use the Joi schema to validate
 };

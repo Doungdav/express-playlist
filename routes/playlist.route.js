@@ -5,33 +5,34 @@ const { Playlist, validatePlaylist } = require('../models/playlist');
 const path = require('path');
 const fs = require('fs');
 
-const dir = path.join('public', 'images');
-if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true }); // Create the directory if it doesn't exist
+// Ensure the images directory exists
+const uploadDir = path.join(__dirname);
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true }); // Create the directory if it doesn't exist
 }
-// Set up storage for images
 
-    const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, path.join('public', 'images'));
-    },
+// Serve uploaded images
+router.use('/images', express.static(uploadDir)); // Serve from '/images'
+
+// storage engine 
+const storage = multer.diskStorage({
+    destination: './public/images',
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname)); // Append timestamp to filename
-    },
-});
+        return cb(null, `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`)
+    }
+})
 
 const upload = multer({ storage });
 
-router.post('/upload', upload.single('file'), (req, res) => {
-    console.log(req.file);
+// Define your upload route
+router.post('/upload', upload.single('images'), (req, res) => {
     if (!req.file) {
-        return res.status(400).send('No file uploaded.');
+        return res.status(400).send('No images uploaded.');
     }
-
-    console.log('File uploaded:', req.file);
-    res.send('File uploaded successfully.');
+    // Build the URL of the uploaded image
+    const imageUrl = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
+    res.send({ message: 'File uploaded successfully!', url: imageUrl });
 });
-
 
 //Create Playlist
 router.post('', async (req, res) => {

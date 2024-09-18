@@ -1,14 +1,21 @@
 const express = require('express');
-const PlaylistSong = require('../models/playlist_song');
+const {PlaylistSong, validatePlaylistSong} = require('../models/playlist_song');
 const router = express.Router();
 
 // Add a song to a playlist
-router.post('/', async (req, res) => {
-    const { playlist_id, song_id, order } = req.body;
-    const newPlaylistSong = new PlaylistSong({ playlist_id, song_id, order });
-    await newPlaylistSong.save();
-    res.status(201).send(newPlaylistSong);
+router.post('/songs/:songId', async (req, res) => {
+    const { error } = validatePlaylistSong(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
+
+    try {
+        const playlistSong = new PlaylistSong(req.body);
+        await playlistSong.save();
+        res.status(201).send(playlistSong);
+    } catch (err) {
+        res.status(500).send('Something went wrong: ' + err.message);
+    }
 });
+
 // Get songs in a playlist
 router.get('/:playlistId', async (req, res) => {
     const songs = await PlaylistSong.find({ playlist_id: req.params.playlistId }).populate('song_id');
