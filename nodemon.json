@@ -1,0 +1,8 @@
+{
+    "watch": ["routes", "models", "middleware"],
+    "ext": "js,json,html",
+    "ignore": ["node_modules/**"],
+    "delay": 500,
+    "verbose": true
+  }
+  

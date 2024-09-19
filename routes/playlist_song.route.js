@@ -7,6 +7,16 @@ router.post('/songs/:songId', async (req, res) => {
     const { error } = validatePlaylistSong(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
+     // Check if the song is already in the playlist
+     const existingPlaylistSong = await PlaylistSong.findOne({
+        playlist_id: req.body.playlist_id,
+        song_id: req.body.song_id
+    });
+    
+    if (existingPlaylistSong) {
+        return res.status(400).send('This song is already in the playlist.');
+    }
+
     try {
         const playlistSong = new PlaylistSong(req.body);
         await playlistSong.save();
@@ -17,7 +27,7 @@ router.post('/songs/:songId', async (req, res) => {
 });
 
 // Get songs in a playlist
-router.get('/:playlistId', async (req, res) => {
+router.get('', async (req, res) => {
     const songs = await PlaylistSong.find({ playlist_id: req.params.playlistId }).populate('song_id');
     res.status(200).send(songs);
 });

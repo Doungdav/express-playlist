@@ -48,7 +48,7 @@ router.post('', async (req, res) => {
     try {
         await playlist.save();
     
-        res.status(201).json(playlist);
+        res.status(201).json({playlist, url:"http://localhost:5000/images/images_1726643430504.png"});
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -97,7 +97,4 @@ router.delete('/:id', async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
-
-
-
 module.exports = router;

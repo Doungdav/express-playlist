@@ -31,7 +31,8 @@ const validatePlaylistSong = (playlistSong) => {
                 'any.required': `"order" is a required field`
             }) 
     });
-
+    // Composite index for playlist_id and song_id to enforce uniqueness
+    playlistSongSchema.index({ playlist_id: 1, song_id: 1 }, { unique: true }); 
     return schema.validate(playlistSong);  // Use the Joi schema to validate
 };
 

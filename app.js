@@ -11,6 +11,8 @@ const userRoutes = require('./routes/user.route');
 const playlistRoutes = require('./routes/playlist.route');
 const songRoutes = require('./routes/song.route');
 const playlist_songRoutes = require('./routes/playlist_song.route');
+const verifyToken = require('./middleware/authmiddleware');
+const protectedRoutes = require('./routes/protectedRoute');
     
 
 
@@ -39,21 +41,20 @@ app.get('/', function(req, res){
 //middleware
 app.use(express.json());
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
-// app.use(express.static('upload'));
-// // Serve static files from the "public" directory
-// //app.use(express.static(path.join(__dirname, 'public')));
-// app.use((err, req, res, next) => {
-//     console.error('Global error handler:', err);
-//     res.status(500).json({ status: 'FAILED', message: 'Something went wrong!' });
-// });
+app.use((err, req, res, next) => {
+    console.error('Global error handler:', err);
+    res.status(500).json({ status: 'FAILED', message: 'Something went wrong!' });
+});
 
 // Routes
 app.use('/api/users', userRoutes);
-app.use('/api/playlists', playlistRoutes);
-app.use('/api/songs', songRoutes);
+app.use('/api/playlists',verifyToken, playlistRoutes);
+app.use('/api/songs', verifyToken, songRoutes);
 app.use('/api/playlists/:playlistsId', playlist_songRoutes);
+app.use('/protected', protectedRoutes);
 
 
 
 http.listen(5000, function(){
+    console.log('Applicate start at port 5000');
 });

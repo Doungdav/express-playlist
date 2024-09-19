@@ -5,12 +5,13 @@ const User = require('../models/user');
 //password hander
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const verifyToken = require('../middleware/authmiddleware');
+const { date } = require('joi');
+
 
 // Secret keys for JWT (store in environment variable for production)
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret'; 
+const JWT_SECRET = process.env.JWT_SECRET || 'happen'; 
 const JWT_EXPIRY = '1h'; // Access token expiry
-const REFRESH_TOKEN_EXPIRY = '7d'; // Refresh token expiry
-const refreshTokens = []; // Store refresh tokens (ideally use a database)
 
 //Create User
 router.post('', async (req, res) => {
@@ -56,11 +57,16 @@ router.post('/signup', async (req, res) => {
         const newUser = new User({ name, email, password: hashedPassword });
         await newUser.save();
 
-        const token = jwt.sign({ id: newUser._id, name, email }, JWT_SECRET, { expiresIn: JWT_EXPIRY });
-        const refreshToken = jwt.sign({ id: newUser._id }, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRY });
-
-        refreshTokens.push(refreshToken); // Store refresh token
-        res.json({ status: 'SUCCESS', message: 'Sign up successfully!', token, refreshToken });
+        res.json({ 
+            status: 'SUCCESS', 
+            message: 'Sign up successfully!',
+            data:{
+                name: name,
+                email: email,
+                password: password,
+            }
+         });
+       
     } catch (error) {
         console.log(error);
         res.json({ status: 'FAILED', message: 'An error occurred while saving user account!' });
@@ -68,78 +74,59 @@ router.post('/signup', async (req, res) => {
 });
 
 //signin
-router.post('/signin', (req, res) =>{
+router.post('/signin', async (req, res) => {
+    let { email, password } = req.body;
+    email = email.trim();
+    password = password.trim();
 
-let {email, password} = req.body;
-email = email.trim();
-password = password.trim();
+    if (!email || !password) {
+        return res.json({
+            status: 'FAILED',
+            message: 'Empty credential supplied!'
+        });
+    }
 
-if(email == "" || password == ""){
-    res.json({
-        status: 'FAILED',
-        message: 'Empty credential supplier!'
-    })
-}else{
-    //check if user exist 
-    User.find({email})
-    .then(data => {
-        if(data.length){
-            //User exist 
-            const hashedPassword = data[0].password;
-            bcrypt.compare(password, hashedPassword).then(result => {
-                if(result) {
-                    res.json({
-                        status: "Success",
-                        message: "Sign Successful!",
-                        data: data
-                    })
-                }else{
-                    res.json({
-                        status: "Failed",
-                        message: "Invalid Password entered!",
-                        data: data
-                    })
-                }
-
-            })
-            .catch(err =>{
-                res.json({
-                    status: "FAILED",
-                    message: "An error accurred while comparing password!"
-                    });
-                 })
-            }else{
-                res.json({
-                    status: "Failed",
-                    message: "Invaild credentials entered!"
-                });
-            }
-        })
-        .catch(err =>{
-            res.json({
+    try {
+        // Check if user exists
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.json({
                 status: "FAILED",
-                message: "An error accurred while checking for existing user!"
+                message: "Invalid credentials entered!"
             });
-        })
-    }
-
-});
-
-// Refresh token endpoint
-router.post('/refresh-token', (req, res) => {
-    const { token } = req.body;
-
-    if (!token || !refreshTokens.includes(token)) {
-        return res.sendStatus(403); // Forbidden
-    }
-
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) {
-            return res.sendStatus(403); // Forbidden
         }
 
-        const newToken = jwt.sign({ id: user.id, name: user.name, email: user.email }, JWT_SECRET, { expiresIn: JWT_EXPIRY });
-        res.json({ token: newToken });
-    });
+        // Compare passwords
+        const isPasswordMatch = await bcrypt.compare(password, user.password);
+        if (!isPasswordMatch) {
+            return res.json({
+                status: "FAILED",
+                message: "Invalid Password entered!",
+            });
+        }
+
+        // Generate token
+        const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+
+        // Respond with success and the token
+        return res.json({
+            status: "SUCCESS",
+            message: "Sign in successful!",
+            data: {
+                user: {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                },
+                token
+            }
+        });
+    } catch (error) {
+        console.error('Error during sign-in:', error);
+        return res.status(500).json({
+            status: "FAILED",
+            message: "An error occurred while signing in!"
+        });
+    }
 });
 module.exports = router;
