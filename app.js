@@ -11,6 +11,7 @@ const userRoutes = require('./routes/user.route');
 const playlistRoutes = require('./routes/playlist.route');
 const songRoutes = require('./routes/song.route');
 const playlist_songRoutes = require('./routes/playlist_song.route');
+const uploadRoutes = require('./routes/upload.route');
 const verifyToken = require('./middleware/authmiddleware');
 const protectedRoutes = require('./routes/protectedRoute');
     
@@ -51,6 +52,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/playlists',verifyToken, playlistRoutes);
 app.use('/api/songs', verifyToken, songRoutes);
 app.use('/api/playlists/:playlistsId', playlist_songRoutes);
+app.use('/api/uploads', uploadRoutes);
 app.use('/protected', protectedRoutes);
 
 
